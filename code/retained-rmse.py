@@ -197,11 +197,7 @@ models = ["adequate uncertainty", "large epistemic", "small epistemic", "even sm
 
 for model in models:
     plot_rmse(
-        true_func=homoscedastic,
-        ppc_func=ppc[model],
-        df=df_test,
-        label=model,
-        title="RMSE vs Retained Fraction on Testing Data",
+        ppc_func=ppc[model], df=df_test, label=model, title="RMSE vs Retained Fraction on Testing Data",
     )
 # -
 
