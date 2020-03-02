@@ -108,10 +108,15 @@ plot_posterior_predictive(
 )
 # -
 
-models = ["heteroscedastic wide", "heteroscedastic narrow", "heteroscedastic less biased",
-          "homoscedastic biased", "any unbiased"]
+models = [
+    "heteroscedastic wide",
+    "heteroscedastic narrow",
+    "heteroscedastic less biased",
+    "homoscedastic biased",
+    "any unbiased",
+]
 for model in models:
-    plot_rmse(true_func=heteroscedastic, ppc_func=ppc[model], df=df, label=model)
+    plot_rmse(ppc_func=ppc[model], df=df, label=model)
 
 # - Models with proper heteroscedastic aleatoric (or total) uncertainty can improve their performance by deferring predictions for the most uncertain cases
 # - The slope of the line indicates the degree of this improvement, i.e. steeper slopes are making better use the of uncertainty, all else held equal (as noted by Gal et al.)
@@ -147,7 +152,9 @@ df_test = generate_data(homoscedastic, points=test_points, seed=1)
 plot_true_function(homoscedastic, df, title=fr"True Function: $y_i = 0.1x_i^3 + \varepsilon$")
 
 # +
-ppc["adequate uncertainty"] = FakePosterior(df.x, df.y, degree=8, aleatoric=1.0, epistemic=2.0, gap=[-1.7, 2.0])
+ppc["adequate uncertainty"] = FakePosterior(
+    df.x, df.y, degree=8, aleatoric=1.0, epistemic=2.0, gap=[-1.7, 2.0]
+)
 
 plot_true_function(homoscedastic, df)
 plot_posterior_predictive(ppc["adequate uncertainty"], df, title="Adequate Posterior Predictive")
@@ -165,7 +172,9 @@ plot_true_function(homoscedastic, df)
 plot_posterior_predictive(ppc["small epistemic"], df, title="Small Epistemic Uncertainty")
 
 # +
-ppc["even smaller epistemic"] = FakePosterior(df.x, df.y, degree=4, aleatoric=1.0, epistemic=0.2, gap=[-1.7, 2.0])
+ppc["even smaller epistemic"] = FakePosterior(
+    df.x, df.y, degree=4, aleatoric=1.0, epistemic=0.2, gap=[-1.7, 2.0]
+)
 
 plot_true_function(homoscedastic, df)
 plot_posterior_predictive(ppc["even smaller epistemic"], df, title="Even Smaller Epistemic Uncertainty")
@@ -175,11 +184,7 @@ models = ["adequate uncertainty", "large epistemic", "small epistemic", "even sm
 
 for model in models:
     plot_rmse(
-        true_func=homoscedastic,
-        ppc_func=ppc[model],
-        df=df,
-        label=model,
-        title="RMSE vs Retained Fraction on Training Data",
+        ppc_func=ppc[model], df=df, label=model, title="RMSE vs Retained Fraction on Training Data",
     )
 # -
 

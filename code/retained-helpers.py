@@ -185,11 +185,10 @@ def plot_posterior_predictive(*args, **kwargs):
 
 # -
 
-def plot_rmse(true_func, ppc_func, df, fractions=None, label=None, seed=0, title=None):
+def plot_rmse(ppc_func, df, fractions=None, label=None, seed=0, title=None):
     """Visualize RMSE for the multiple fractions of retained data.
     
     Args:
-        true_func: a scipy.stats distribution corresponding to the true function
         ppc_func: a scipy.stats distribution for the posterior predictive
         df: a pandas DataFrame with the predictor variable X
         fractions: an optional list of fractions of retained data (default: [0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
