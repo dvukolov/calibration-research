@@ -128,7 +128,6 @@ for model in models:
 #     - How does one compute the confidence intervals for RMSE or other regression metrics e.g. NLL?
 #     - Do they depend on aleatoric uncertainty only, i.e. the variance of the mean prediction or on both aleatoric & epistemic?
 # - We could construct the same plot with other metrics instead of RMSE, e.g. the negative log-likelihood
-# - (Optionally) A [normalized RMSE](https://en.wikipedia.org/wiki/Root-mean-square_deviation#Normalized_root-mean-square_deviation) may be used to facilitate comparisons between datasets or models with different scales
 
 # ![gals-retained-metric.png](attachment:gals-retained-metric.png)
 
