@@ -45,7 +45,7 @@ def heteroscedastic_base(x, base_std, bias=0):
 
 # # Original plots for classification using Accuracy and AUC
 
-# ![gals-retained-metric.png](attachment:gals-retained-metric.png)
+# <img src='./images/gals-retained-metric.png'>
 
 # # Similar plots for regression based e.g. on RMSE
 #
@@ -129,7 +129,7 @@ for model in models:
 #     - Do they depend on aleatoric uncertainty only, i.e. the variance of the mean prediction or on both aleatoric & epistemic?
 # - We could construct the same plot with other metrics instead of RMSE, e.g. the negative log-likelihood
 
-# ![gals-retained-metric.png](attachment:gals-retained-metric.png)
+# <img src='./images/gals-retained-metric.png'>
 
 # ## Case 2: Good aleatoric, varying epistemic uncertainty 
 
