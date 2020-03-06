@@ -79,9 +79,7 @@ plot_posterior_predictive(ppc["homoscedastic biased"], df, title="Homoscedastic 
 ppc["heteroscedastic narrow"] = lambda x: heteroscedastic_base(x, base_std=0.5, bias=0.05)
 
 plot_true_function(heteroscedastic, df)
-plot_posterior_predictive(
-    ppc["heteroscedastic narrow"], df, title="Heteroscedastic Biased Posterior Predictive"
-)
+plot_posterior_predictive(ppc["heteroscedastic narrow"], df, title="Heteroscedastic Biased Posterior Predictive")
 # -
 
 plot_true_function(heteroscedastic, df)
@@ -182,9 +180,7 @@ plot_posterior_predictive(ppc["even smaller epistemic"], df, title="Even Smaller
 models = ["adequate uncertainty", "large epistemic", "small epistemic", "even smaller epistemic"]
 
 for model in models:
-    plot_rmse(
-        ppc_func=ppc[model], df=df, label=model, title="RMSE vs Retained Fraction on Training Data",
-    )
+    plot_rmse(ppc_func=ppc[model], df=df, label=model, title="RMSE vs Retained Fraction on Training Data")
 # -
 
 # - The effect of data retention is random
@@ -195,9 +191,7 @@ for model in models:
 models = ["adequate uncertainty", "large epistemic", "small epistemic", "even smaller epistemic"]
 
 for model in models:
-    plot_rmse(
-        ppc_func=ppc[model], df=df_test, label=model, title="RMSE vs Retained Fraction on Testing Data",
-    )
+    plot_rmse(ppc_func=ppc[model], df=df_test, label=model, title="RMSE vs Retained Fraction on Testing Data")
 # -
 
 # - On the test set, *with the need to predict out-of-distribution data*, the effects of epistemic uncertainty can be observed
