@@ -121,7 +121,7 @@ for model in models:
 # - Models with homoscedastic aleatoric (or total) uncertainty do not have this property
 # - Less biased and more accurate models lie to the lower right on the RMSE plot
 # - Performance could be measured by the area under the curve, which we would seek to minimize
-# - Heteroscedastic models with proportionally higher or lower uncertainties are not distinguished by the plot. Absolute values of uncertainty are not taken into account.
+# - Heteroscedastic models with proportionally higher or lower uncertainties are not distinguished by the plot. Absolute values of uncertainty are not taken into account, at least when using RMSE as a metric.
 # - The original plots additionally visualize the uncertainty of the metric itself (e.g. accuracy $\pm 1 \text{ std.}$)
 #     - How does one compute the confidence intervals for RMSE or other regression metrics e.g. NLL?
 #     - Do they depend on aleatoric uncertainty only, i.e. the variance of the mean prediction or on both aleatoric & epistemic?
@@ -200,7 +200,7 @@ for model in models:
 # - Thus the presence of epistemic uncertainty allows to improve model performance when a part of the data is retained
 # - The absolute amount of epistemic uncertainty matters as long as it reflects the variability of the mean prediction
 # - Otherwise, the exact absolute amount of epistemic uncertainty plays no role
-# - We *need to have out-of-distribution data* to be able to distinguish a Bayesian model with good epistemic uncertainty from a model with bad epistemic uncertainty one with this plot.
+# - We *need to have out-of-distribution data* to be able to distinguish a Bayesian model with good epistemic uncertainty from a model with bad epistemic uncertainty with this plot.
 
 # # Next steps
 
@@ -213,9 +213,7 @@ for model in models:
 # - Calibration
 #     - Understand how we could apply the fairness criterion for informed (not average) calibration
 #     - Research possible ways to calibrate without ruining epistemic uncertainty
-#     - See if it is possible to automatically detect where (in which regiond or groupd) the model is miscalibrated
+#     - See if it is possible to automatically detect where (in which regions or groups) the model is miscalibrated
 # - Application
 #     - Pick a couple of candidate tasks in active learning, RL or Bayesian optimization
 #     - Come up with ways to more comprehensively evaluate models with uncertainty on those tasks
-
-
