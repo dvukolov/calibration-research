@@ -6,11 +6,11 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.3.0
+#       jupytext_version: 1.3.4
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: Python [conda env:numpyro]
 #     language: python
-#     name: python3
+#     name: conda-env-numpyro-py
 # ---
 
 # +
@@ -211,3 +211,134 @@ def plot_rmse(ppc_func, df, fractions=None, label=None, seed=0, title=None):
     plt.ylabel("RMSE")
     plt.title(title or "RMSE vs Fraction of Retained Data")
     plt.legend(bbox_to_anchor=(1.02, 1), borderaxespad=0, title="Posterior Predictives")
+    
+    return pd.Series(metrics).sum()
+
+
+def add_std(func, df, seed=None):
+    """Add new column with standard deviation.
+    
+    Args:
+        func: a scipy.stats distribution of the posterior predictive
+        df: a pandas DataFrame with the data
+        seed: an optional random seed used to break the ties
+    """
+    # Randomize the order of rows for breaking the ties
+    df = df.copy().sample(frac=1, random_state=seed)
+
+    # Retrieve the uncertainty estimates of the posterior predictive for each X
+    dist = func(df.x)
+    df["_uncertainty"] = dist.std()
+
+    return df
+
+
+def weighted_rmse(y_true, y_pred, scale_func, weights):
+    """Compute Weighted RMSE"""
+    return np.sqrt(scale_func(weights, (y_pred - y_true) ** 2).mean())
+
+
+def calc_rmse_weighted(ppc_func, df, scale_func=None, seed=0, title=None):
+    """Calculate RMSE weighted by a scaling function.
+    
+    If scale_func is not provided, it defaults to inversely weighting RMSE by standard deviation.
+    
+    Args:
+        ppc_func: a scipy.stats distribution for the posterior predictive
+        df: a pandas DataFrame with the predictor variable X
+        scale_func: function to weigh rmse
+        seed: an optional random seed to break the ties when retaining data (default: 0)
+    """
+    if scale_func is None:
+        scale_func = lambda w, x: x / w
+
+    df_std = add_std(ppc_func, df, seed=seed)
+
+    y_true = df_std.y.values
+    y_pred = ppc_func(df_std.x).mean()
+    metric = weighted_rmse(y_true, y_pred, scale_func, df_std["_uncertainty"].values)
+
+    return metric
+
+
+def sqe_corr(y_true, y_pred, std):
+    """Compute SSE and std correlation"""
+    return np.corrcoef((y_pred - y_true)**2, std)[1,1]
+
+
+def calc_corr_metric(ppc_func, df, scale_func=None, seed=0, title=None):
+    df_std = add_std(ppc_func, df, seed=seed)
+    y_true = df_std.y.values
+    y_pred = ppc_func(df_std.x).mean()
+    metric = sqe_corr(y_true, y_pred, df_std["_uncertainty"].values)
+
+    return metric
+
+
+def emp_entropy(samples, bins=100):
+    freq, bins=np.histogram(res_main['post_pred_x'], density=True)
+    bin_width=(bins[1:]-bins[:-1])[0]
+    return np.sum(freq*np.log(freq/bin_width))
+
+
+def emp_rmse(samples, y_true):
+    return np.sqrt(((np.mean(samples, axis=0) - y_true) ** 2).mean())
+
+
+def emp_rmse_weighted(samples, y_true, scale_func):
+    """Compute Weighted RMSE inversely by Standard Deviation"""
+    return np.sqrt(scale_func(np.std(samples, axis=0), (np.mean(samples, axis=0) - y_true) ** 2).mean())
+
+
+def plot_emp_rmse(samples, df, fractions=None, label=None, seed=0, title=None):
+    """Visualize RMSE for the multiple fractions of retained data.
+    
+    Args:
+        ppc_func: a scipy.stats distribution for the posterior predictive
+        df: a pandas DataFrame with the predictor variable X
+        fractions: an optional list of fractions of retained data (default: [0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
+        label: an optional legend label for the curve
+        seed: an optional random seed to break the ties when retaining data (default: 0)
+    """
+    if fractions is None:
+        fractions = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+
+    metrics = {}
+    for frac in fractions:
+        df_retained = emp_retain(samples, df, frac=frac, seed=seed)
+
+        y_true = df_retained.y.values
+        y_pred = np.mean(df_retained.x, axis=0)
+        metrics[frac] = emp_rmse(y_true, y_pred)
+
+    pd.Series(metrics).plot(style="-o", xlim=[min(fractions) - 0.02, 1.02], label=label.title())
+    plt.xlabel("Fraction of Retained Data")
+    plt.ylabel("RMSE")
+    plt.title(title or "RMSE vs Fraction of Retained Data")
+    plt.legend(bbox_to_anchor=(1.02, 1), borderaxespad=0, title="Posterior Predictives")
+    
+    return pd.Series(metrics).sum()
+
+
+def emp_retain(samples, df, frac, seed=None):
+    """Retain a fraction of the original data corresponding to the lowest
+    posterior predictive uncertainty.
+    
+    Args:
+        func: a scipy.stats distribution of the posterior predictive
+        df: a pandas DataFrame with the data
+        frac: a fraction of the data to retain
+        seed: an optional random seed used to break the ties
+    """
+    # Randomize the order of rows for breaking the ties
+    df = df.copy().sample(frac=1, random_state=seed)
+
+    # Retrieve the uncertainty estimates of the posterior predictive for each X
+    dist = func(df.x)
+    df["_uncertainty"] = dist.std()
+
+    # Retain a portion of the observations with the lowest uncertainty
+    n = int(df.shape[0] * frac)
+    df_retained = df.nsmallest(n, "_uncertainty").sort_index().drop(columns="_uncertainty")
+
+    return df_retained

@@ -6,11 +6,11 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.3.0
+#       jupytext_version: 1.3.4
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: Python [conda env:numpyro]
 #     language: python
-#     name: python3
+#     name: conda-env-numpyro-py
 # ---
 
 # +
@@ -48,7 +48,7 @@ def heteroscedastic_base(x, base_std, bias=0):
 # <img src='./images/gals-retained-metric.png'>
 
 # # Similar plots for regression based e.g. on RMSE
-#
+
 # ## Case 1: The role of aleatoric uncertainty and bias
 
 # +
@@ -104,8 +104,8 @@ plot_true_function(heteroscedastic, df)
 plot_posterior_predictive(
     ppc["heteroscedastic less biased"], df, title="Heteroscedastic (Less Biased) Posterior Predictive"
 )
-# -
 
+# +
 models = [
     "heteroscedastic wide",
     "heteroscedastic narrow",
@@ -113,8 +113,14 @@ models = [
     "homoscedastic biased",
     "any unbiased",
 ]
+
+pseudo_area = []
+
 for model in models:
-    plot_rmse(ppc_func=ppc[model], df=df, label=model)
+    metric = plot_rmse(ppc_func=ppc[model], df=df, label=model)
+    pseudo_area.append(metric)
+    print(model, metric)
+# -
 
 # - Models with proper heteroscedastic aleatoric (or total) uncertainty can improve their performance by deferring predictions for the most uncertain cases
 # - The slope of the line indicates the degree of this improvement, i.e. steeper slopes are making better use the of uncertainty, all else held equal (as noted by Gal et al.)
@@ -126,6 +132,41 @@ for model in models:
 #     - How does one compute the confidence intervals for RMSE or other regression metrics e.g. NLL?
 #     - Do they depend on aleatoric uncertainty only, i.e. the variance of the mean prediction or on both aleatoric & epistemic?
 # - We could construct the same plot with other metrics instead of RMSE, e.g. the negative log-likelihood
+
+# ### Additional Metrics
+
+# +
+weighted_rmse_metric = []
+
+for model in models:
+    metric = calc_rmse_weighted(ppc_func=ppc[model], df=df)
+    weighted_rmse_metric.append(metric)
+    print(model, metric)
+# -
+
+# $\sqrt{\frac{1}{n}\sum_i\unicode{x1D7D9}_{\text{cutoff}}(\hat{y_i}-y_i)^2}$
+
+# +
+std_correlation = []
+
+for model in models:
+    metric = calc_corr_metric(ppc_func=ppc[model], df=df)
+    std_correlation.append(metric)
+    print(model, metric)
+# -
+
+# $\sqrt{\frac{1}{n}\sum_i\frac{1}{\sigma_i}(\hat{y_i}-y_i)^2}$
+
+# +
+all_metrics_df = pd.DataFrame({'pseudo_area': pseudo_area,
+              'weighted_rmse_metric': weighted_rmse_metric,
+              'std correlation': std_correlation
+             })
+
+all_metrics_df.index = models
+
+all_metrics_df
+# -
 
 # <img src='./images/gals-retained-metric.png'>
 
@@ -179,8 +220,55 @@ plot_posterior_predictive(ppc["even smaller epistemic"], df, title="Even Smaller
 # +
 models = ["adequate uncertainty", "large epistemic", "small epistemic", "even smaller epistemic"]
 
+pseudo_area = []
+
 for model in models:
-    plot_rmse(ppc_func=ppc[model], df=df, label=model, title="RMSE vs Retained Fraction on Training Data")
+    metric = plot_rmse(ppc_func=ppc[model], df=df, label=model, title="RMSE vs Retained Fraction on Training Data")
+    pseudo_area.append(metric)
+    print(model, metric)
+# -
+
+# - On the test set, *with the need to predict out-of-distribution data*, the effects of epistemic uncertainty can be observed
+# - To be precise, the plot depicts the deviation of the mean prediction from the true values
+# - The mean prediction, in turn, has a tendency to vary depending on the amount of epistemic uncertainty
+# - Thus the presence of epistemic uncertainty allows to improve model performance when a part of the data is retained
+# - The absolute amount of epistemic uncertainty matters as long as it reflects the variability of the mean prediction
+# - Otherwise, the exact absolute amount of epistemic uncertainty plays no role
+# - We *need to have out-of-distribution data* to be able to distinguish a Bayesian model with good epistemic uncertainty from a model with bad epistemic uncertainty with this plot.
+
+# ### Additional Metrics
+
+# +
+weighted_rmse_metric = []
+
+for model in models:
+    metric = calc_rmse_weighted(ppc_func=ppc[model], df=df)
+    weighted_rmse_metric.append(metric)
+    print(model, metric)
+# -
+
+# $\sqrt{\frac{1}{n}\sum_i\unicode{x1D7D9}_{\text{cutoff}}(\hat{y_i}-y_i)^2}$
+
+# +
+std_correlation = []
+
+for model in models:
+    metric = calc_corr_metric(ppc_func=ppc[model], df=df)
+    std_correlation.append(metric)
+    print(model, metric)
+# -
+
+# $\sqrt{\frac{1}{n}\sum_i\frac{1}{\sigma_i}(\hat{y_i}-y_i)^2}$
+
+# +
+all_metrics_df = pd.DataFrame({'pseudo_area': pseudo_area,
+              'weighted_rmse_metric': weighted_rmse_metric,
+              'std correlation': std_correlation
+             })
+
+all_metrics_df.index = models
+
+all_metrics_df
 # -
 
 # - The effect of data retention is random
@@ -193,14 +281,6 @@ models = ["adequate uncertainty", "large epistemic", "small epistemic", "even sm
 for model in models:
     plot_rmse(ppc_func=ppc[model], df=df_test, label=model, title="RMSE vs Retained Fraction on Testing Data")
 # -
-
-# - On the test set, *with the need to predict out-of-distribution data*, the effects of epistemic uncertainty can be observed
-# - To be precise, the plot depicts the deviation of the mean prediction from the true values
-# - The mean prediction, in turn, has a tendency to vary depending on the amount of epistemic uncertainty
-# - Thus the presence of epistemic uncertainty allows to improve model performance when a part of the data is retained
-# - The absolute amount of epistemic uncertainty matters as long as it reflects the variability of the mean prediction
-# - Otherwise, the exact absolute amount of epistemic uncertainty plays no role
-# - We *need to have out-of-distribution data* to be able to distinguish a Bayesian model with good epistemic uncertainty from a model with bad epistemic uncertainty with this plot.
 
 # # Next steps
 
@@ -217,3 +297,5 @@ for model in models:
 # - Application
 #     - Pick a couple of candidate tasks in active learning, RL or Bayesian optimization
 #     - Come up with ways to more comprehensively evaluate models with uncertainty on those tasks
+
+
